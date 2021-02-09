@@ -4,6 +4,7 @@ const TodoItem = ({ item, index, onChange, onClick })=> {
   const [text, setText] = useState(item.value);
   const [focus, setFocus] = useState(false);
   const currentRef = useRef(null);
+  console.log(item, index);
 
   useEffect(() => {
     if (focus) {

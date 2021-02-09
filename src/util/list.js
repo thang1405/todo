@@ -1,23 +1,33 @@
 export const getList = (list, type) => {
+  const newMap = new Map(list);
   switch (type) {
     case "Active":
-      return list.filter((x) => !x.checked);
+      newMap.forEach((value, key) => {
+        if (value.checked) newMap.delete(key);
+      });
+      break;
     case "Completed":
-      return list.filter((x) => x.checked);
+      newMap.forEach((value, key) => {
+        if (!value.checked) newMap.delete(key);
+      });
+      break;
     default:
-      return list;
+      break;
   }
+  return newMap;
 };
 
 export const isAllChecked = (list) => {
   let countCheck = 0;
-  const length = list.length;
-  list.forEach((item) => {
-    if (item.checked) countCheck++;
+  const length = list.size;
+  list.forEach((value, key) => {
+    if (value.checked) countCheck++;
   });
   return countCheck === length;
 };
 
-export const checkValue = (list) =>{
-  return isAllChecked(list) ;
-}
+export const changeALL = (list, bool) => {
+  list.forEach((value, key) => {
+    list.set(key, { ...value, checked: bool });
+  });
+};

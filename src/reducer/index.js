@@ -1,5 +1,5 @@
 import { produce } from "immer";
-import { getList, isAllChecked } from "../util/list";
+import { getList, isAllChecked, changeALL } from "../util/list";
 import {
   ADD,
   ON_CHANGE,
@@ -10,27 +10,15 @@ import {
   CLEAR_COMPLETED,
 } from "../action";
 
+import { enableMapSet } from 'immer'
+
+enableMapSet()
+
 export const initState = {
   input: "",
   type: "All",
-  list: [
-    {
-      value: "naruto 1",
-      checked: true,
-      index:0
-    },
-    {
-      value: "one piece 2",
-      checked: false,
-      index:1
-    },
-    {
-      value: "Neel 3",
-      checked: true,
-      index:2
-    },
-  ],
-  cunrrentIndex : 3
+  list: new Map(),
+  cunrrentIndex: 0,
 };
 
 export const reducer = (state, action) =>
@@ -38,45 +26,30 @@ export const reducer = (state, action) =>
     switch (action.type) {
       case ADD:
         if (draft.input.trim() !== "") {
-          draft.list.push({
+          draft.list.set(draft.cunrrentIndex, {
             value: draft.input,
             checked: false,
-            index: draft.cunrrentIndex
           });
         }
         draft.input = "";
-        draft.cunrrentIndex ++;
+        draft.cunrrentIndex++;
         break;
       case ON_CHANGE:
         draft.input = action.value;
         break;
       case CHANGE_CHECK:
-        draft.list[action.value].checked = !draft.list[action.value].checked;
+        let currentItem = draft.list.get(action.value);
+        // currentItem.checked = !currentItem.checked;
+        draft.list.get(action.value).checked = !currentItem.checked ;
         break;
       case DELETE_ITEM:
-        console.log(action.value);
-        let list = draft.list.map((item,index) =>{
-            return  {
-              value :item.value,
-              checked : item.checked,
-              index: item.index
-            } 
-        });
-        draft.list = list.filter((x, i) => i !== action.value);
+        draft.list.delete(action.value);
         break;
       case CHANGE_ALL:
         if (isAllChecked(draft.list)) {
-          draft.list = draft.list.map((x) => ({
-            value: x.value,
-            checked: false,
-            index: x.index
-          }));
+          changeALL(draft.list, false);
         } else {
-          draft.list = draft.list.map((x) => ({
-            value: x.value,
-            checked: true,
-            
-          }));
+          changeALL(draft.list, true);
         }
         break;
       case CHANGE_FILLTER:

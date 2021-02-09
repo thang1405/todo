@@ -1,5 +1,5 @@
 import React, { useReducer, useEffect, useRef } from "react";
-import { getList, checkValue } from "../util/list";
+import { getList, isAllChecked } from "../util/list";
 import { reducer,initState } from "../reducer/index";
 import {
   ADD,
@@ -21,12 +21,12 @@ export default function TodoList() {
     todoInput.current.focus();
   }, []);
 
-  const tab = (type) => {
-    const fillter = ["All", "Active", "Completed"];
-    if (fillter.length > 0)
+  const filterTab = (type) => {
+    const filter = ["All", "Active", "Completed"];
+    if (filter.length > 0)
       return (
         <div className="inline-flex todo_sorts justify-center">
-          {fillter.map((item, i) => (
+          {filter.map((item, i) => (
             <button
               key={i}
               className={`list_sort py-1 px-2 mr-1 ${
@@ -52,14 +52,18 @@ export default function TodoList() {
   const listItems = (state) => {
     const lists = state.list;
     const type = state.type;
-    if (lists.length > 0) {
-      return getList(lists, type).map((x, i) => (
+    if (lists.size > 0) {
+      let todosArray = [];
+      getList(lists,type).forEach((value,key)=>{
+        todosArray.push({...value,index:key})
+      })
+      return todosArray.map((item) => (
         <TodoItem
-          key={x.index}
-          item={x}
-          index={i}
-          onChange={() => dispatch({ type: CHANGE_CHECK, value: i })}
-          onClick={() => dispatch({ type: DELETE_ITEM, value: i })}
+          key={item.index}
+          item={item}
+          index={item.index}
+          onChange={() => dispatch({ type: CHANGE_CHECK, value: item.index })}
+          onClick={() => dispatch({ type: DELETE_ITEM, value: item.index })}
         />
       ));
     }
@@ -78,7 +82,7 @@ export default function TodoList() {
             id="check_all"
             onChange={() => dispatch({ type: CHANGE_ALL })}
             className="opacity-0 check_box-all"
-            checked={checkValue(state.list)}
+            checked={isAllChecked(state.list)}
           />
           <label htmlFor="check_all" className="check_all py-4 px-6">
             <i className="fas fa-angle-down"></i>
@@ -98,14 +102,14 @@ export default function TodoList() {
           </div>
         </div>
         {listItems(state)}
-        {state.list.length ? (
+        {state.list.size ? (
           <div className="footer px-4 py-3 flex  relative">
             <div className="float-left text-sm todo_count">
-              {getList(state.list, 1).length} items left
+              {getList(state.list, 1).size} items left
             </div>
-            {tab(state.type)}
+            {filterTab(state.type)}
             <div className="float-right text-sm todo_clear">
-              {getList(state.list, 2).length ? (
+              {getList(state.list, 2).size ? (
                 <button onClick={() => dispatch({ type: CLEAR_COMPLETED })}>
                   Clear completed
                 </button>
